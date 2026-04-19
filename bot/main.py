@@ -5,7 +5,7 @@ import logging
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
+from aiogram.enums import ChatAction, ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -193,7 +193,7 @@ async def cb_start_quiz(cb: CallbackQuery, state: FSMContext) -> None:
 # ─── Приём ответов ─────────────────────────────────────────────────────────
 
 @dp.message(Quiz.answering, F.text)
-async def on_answer(message: Message, state: FSMContext) -> None:
+async def on_answer(message: Message, state: FSMContext, bot: Bot) -> None:
     data = await state.get_data()
     book_id: str = data["book_id"]
     num: int = data["chapter_num"]
@@ -208,7 +208,7 @@ async def on_answer(message: Message, state: FSMContext) -> None:
     questions: list[dict] = chapter["questions"]
     q = questions[idx]
 
-    await message.bot.send_chat_action(message.chat.id, "typing")
+    await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
 
     try:
         verdict = await grade_answer(
@@ -327,7 +327,10 @@ async def main() -> None:
         "Бот запущен (polling). AI-оценка: %s",
         "ON" if (config.use_ai_grading and config.openai_api_key) else "OFF",
     )
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
 
 
 if __name__ == "__main__":
