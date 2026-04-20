@@ -13,7 +13,6 @@ def load_content() -> dict:
     books = data.get("books")
     if not books:
         raise RuntimeError("В chapters.json нет ни одной книги")
-    # лёгкая валидация
     for b in books:
         for key in ("id", "title", "chapters"):
             if key not in b:

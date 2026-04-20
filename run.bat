@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0bot"
+cd /d "%~dp0backend"
 
 if not exist venv (
     echo ОШИБКА: нет venv. Сначала запусти setup.bat
@@ -9,5 +9,5 @@ if not exist venv (
 )
 
 call venv\Scripts\activate.bat
-python main.py
+python run.py
 pause

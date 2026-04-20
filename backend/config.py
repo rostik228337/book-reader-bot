@@ -15,6 +15,7 @@ class Config:
     openai_api_key: str | None
     use_ai_grading: bool
     admin_user_id: int
+    webapp_url: str
 
 
 def load_config() -> Config:
@@ -30,9 +31,12 @@ def load_config() -> Config:
     except ValueError:
         admin_id = 0
 
+    webapp_url = os.getenv("WEBAPP_URL", "https://your-ngrok-url.ngrok-free.app").strip()
+
     return Config(
         bot_token=token,
         openai_api_key=(os.getenv("OPENAI_API_KEY", "").strip() or None),
         use_ai_grading=os.getenv("USE_AI_GRADING", "false").strip().lower() == "true",
         admin_user_id=admin_id,
+        webapp_url=webapp_url,
     )

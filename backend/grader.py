@@ -2,7 +2,7 @@
 
 Два режима:
 - keywords (по умолчанию, бесплатный): лемматизация pymorphy3 + поиск ключевых слов/фраз.
-- ai (опциональный): OpenAI API для сравнения по смыслу. Если недоступен — фоллбэк на keywords.
+- ai (опциональный): OpenAI API. Если недоступен — фоллбэк на keywords.
 """
 from __future__ import annotations
 
@@ -34,12 +34,11 @@ def _grade_keywords(question: dict, user_answer: str) -> dict:
     lemmas = _lemmatize(user_answer)
     keywords: list[str] = question.get("keywords", [])
     if not keywords:
-        # если ключевых слов не задано — считаем по длине ответа (эвристика)
         n_words = len(lemmas)
         if n_words >= 15:
             return {"score": 2, "feedback": "✅ Развёрнутый ответ."}
         if n_words >= 5:
-            return {"score": 1, "feedback": "⚠️ Ответ короткий."}
+            return {"score": 1, "feedback": "⚠️ Ответ короткий, раскрой подробнее."}
         return {"score": 0, "feedback": "❌ Слишком коротко или пусто."}
 
     required = int(question.get("required_count", max(1, len(keywords) // 2)))
@@ -67,7 +66,7 @@ def _grade_keywords(question: dict, user_answer: str) -> dict:
     }
 
 
-_ai_client = None  # type: ignore[var-annotated]
+_ai_client = None
 
 
 async def _grade_ai(question: dict, user_answer: str, api_key: str) -> dict:
@@ -78,7 +77,7 @@ async def _grade_ai(question: dict, user_answer: str, api_key: str) -> dict:
 
     system = (
         "Ты — строгий, но справедливый преподаватель. Оцени, насколько ответ студента "
-        "совпадает по СМЫСЛУ с эталонным ответом. Верни СТРОГО JSON в формате: "
+        "совпадает по СМЫСЛУ с эталонным ответом. Верни СТРОГО JSON: "
         '{"score": 0|1|2, "feedback": "комментарий на русском, 1-2 предложения"}. '
         "0 — мимо, 1 — уловил часть, 2 — правильный ответ по сути."
     )
@@ -97,8 +96,7 @@ async def _grade_ai(question: dict, user_answer: str, api_key: str) -> dict:
         temperature=0.2,
     )
     data = json.loads(resp.choices[0].message.content)
-    score = int(data.get("score", 0))
-    score = max(0, min(2, score))
+    score = max(0, min(2, int(data.get("score", 0))))
     feedback = str(data.get("feedback", "")).strip() or "Оценено."
     return {"score": score, "feedback": feedback}
 

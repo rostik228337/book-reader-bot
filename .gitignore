@@ -1,5 +1,6 @@
 # Секреты — НИКОГДА не коммитить
 bot/.env
+backend/.env
 *.env
 !.env.example
 
@@ -14,6 +15,7 @@ __pycache__/
 *.so
 .Python
 bot/venv/
+backend/venv/
 venv/
 env/
 .venv/

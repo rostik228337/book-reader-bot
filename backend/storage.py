@@ -5,8 +5,6 @@ import aiosqlite
 
 DB_PATH = Path(__file__).parent.parent / "data" / "progress.db"
 
-PASS_THRESHOLD = 1.5  # средний балл для прохождения главы
-
 
 async def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -70,46 +68,19 @@ async def save_attempt(
         await db.commit()
 
 
-async def upsert_chapter_progress(
-    user_id: int, book_id: str, chapter_num: int, avg_score: float
-) -> None:
-    """Обновить best_avg_score (только если новый выше) и отметить completed."""
+async def mark_chapter_passed(user_id: int, book_id: str, chapter_num: int) -> None:
+    """Отметить главу как пройденную (все ответы = 2 балла)."""
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute(
-            "SELECT best_avg_score FROM chapter_progress "
-            "WHERE user_id=? AND book_id=? AND chapter_num=?",
+        await db.execute(
+            """
+            INSERT INTO chapter_progress(user_id, book_id, chapter_num, best_avg_score, completed, completed_at)
+            VALUES (?, ?, ?, 2.0, 1, datetime('now'))
+            ON CONFLICT(user_id, book_id, chapter_num)
+            DO UPDATE SET best_avg_score=2.0, completed=1,
+                completed_at=COALESCE(completed_at, datetime('now'))
+            """,
             (user_id, book_id, chapter_num),
         )
-        row = await cur.fetchone()
-
-        if row is None:
-            completed = 1 if avg_score >= PASS_THRESHOLD else 0
-            await db.execute(
-                "INSERT INTO chapter_progress("
-                "  user_id, book_id, chapter_num, best_avg_score, completed, completed_at"
-                ") VALUES (?, ?, ?, ?, ?, "
-                "  CASE WHEN ? >= ? THEN datetime('now') ELSE NULL END)",
-                (
-                    user_id, book_id, chapter_num, avg_score, completed,
-                    avg_score, PASS_THRESHOLD,
-                ),
-            )
-        else:
-            best = row[0]
-            new_best = max(best, avg_score)
-            new_completed = 1 if new_best >= PASS_THRESHOLD else 0
-            await db.execute(
-                "UPDATE chapter_progress "
-                "SET best_avg_score=?, completed=?, "
-                "    completed_at = CASE "
-                "      WHEN ? >= ? AND completed_at IS NULL THEN datetime('now') "
-                "      ELSE completed_at END "
-                "WHERE user_id=? AND book_id=? AND chapter_num=?",
-                (
-                    new_best, new_completed, new_best, PASS_THRESHOLD,
-                    user_id, book_id, chapter_num,
-                ),
-            )
         await db.commit()
 
 
@@ -121,9 +92,22 @@ async def get_user_progress(user_id: int, book_id: str) -> dict[int, dict]:
             (user_id, book_id),
         )
         rows = await cur.fetchall()
-    return {
-        r[0]: {"avg": r[1], "completed": bool(r[2])} for r in rows
-    }
+    return {r[0]: {"avg": r[1], "completed": bool(r[2])} for r in rows}
+
+
+async def get_total_progress(user_id: int, book_id: str, total_chapters: int) -> float:
+    """Возвращает процент пройденных глав (0.0–100.0)."""
+    if total_chapters == 0:
+        return 0.0
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM chapter_progress "
+            "WHERE user_id=? AND book_id=? AND completed=1",
+            (user_id, book_id),
+        )
+        row = await cur.fetchone()
+    completed = row[0] if row else 0
+    return round((completed / total_chapters) * 100, 1)
 
 
 async def get_stats(user_id: int) -> dict:
@@ -138,10 +122,3 @@ async def get_stats(user_id: int) -> dict:
         "completed_chapters": (row[0] if row else 0) or 0,
         "avg_score": (row[1] if row else 0.0) or 0.0,
     }
-
-
-async def reset_user(user_id: int) -> None:
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("DELETE FROM attempts WHERE user_id=?", (user_id,))
-        await db.execute("DELETE FROM chapter_progress WHERE user_id=?", (user_id,))
-        await db.commit()
