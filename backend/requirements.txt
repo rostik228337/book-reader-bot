@@ -1,8 +1,0 @@
-fastapi>=0.110
-uvicorn[standard]>=0.27
-aiogram>=3.4,<4.0
-aiosqlite>=0.19
-pymorphy3>=2.0
-pymorphy3-dicts-ru
-python-dotenv>=1.0
-openai>=1.14
