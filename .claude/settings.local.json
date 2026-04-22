@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile backend/config.py)",
+      "Bash(python -m py_compile backend/content.py)",
+      "Bash(python -m py_compile backend/grader.py)",
+      "Bash(python -m py_compile backend/storage.py)",
+      "Bash(python -m py_compile backend/auth.py)",
+      "Bash(python -c \"import json; json.load\\(open\\('data/chapters.json', encoding='utf-8'\\)\\); print\\('JSON OK'\\)\")"
+    ]
+  }
+}

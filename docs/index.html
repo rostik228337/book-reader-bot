@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BookReader</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── Loading ─────────────────────────────────────── -->
+  <div id="screen-loading" class="screen active">
+    <div class="spinner"></div>
+    <span class="text-hint">Загрузка…</span>
+  </div>
+
+  <!-- ─── Home ─────────────────────────────────────────── -->
+  <div id="screen-home" class="screen">
+    <!-- Шапка с кольцом прогресса -->
+    <div class="book-header">
+      <div class="progress-ring-wrap">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle class="ring-bg"   cx="70" cy="70" r="54"/>
+          <circle class="ring-fill" cx="70" cy="70" r="54"/>
+        </svg>
+        <div class="ring-label">
+          <span class="ring-percent">0%</span>
+          <span class="ring-sub">прочитано</span>
+        </div>
+      </div>
+      <span class="book-title">Загрузка…</span>
+      <span class="book-author"></span>
+    </div>
+
+    <!-- Список глав -->
+    <span class="chapters-title">Главы</span>
+    <div class="chapters-list" id="chapters-list">
+      <!-- рендерится из JS -->
+    </div>
+  </div>
+
+  <!-- ─── Chapter (квиз) ───────────────────────────────── -->
+  <div id="screen-chapter" class="screen">
+    <div class="chapter-header">
+      <span class="chapter-header-title" id="quiz-chapter-title"></span>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="quiz-progress-fill" style="width:0%"></div>
+      </div>
+      <span class="question-counter" id="quiz-counter">Вопрос 1 из …</span>
+    </div>
+
+    <div class="question-card" id="quiz-question"></div>
+
+    <div class="answer-area">
+      <textarea
+        id="quiz-answer"
+        placeholder="Напиши ответ своими словами…"
+        rows="6"
+      ></textarea>
+      <div id="quiz-feedback" class="feedback-card" style="display:none"></div>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="btn" id="btn-submit">Ответить</button>
+  </div>
+
+  <!-- ─── Result ────────────────────────────────────────── -->
+  <div id="screen-result" class="screen">
+    <div class="spacer"></div>
+    <div class="result-icon" id="result-icon">🎉</div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-subtitle" id="result-subtitle"></div>
+    <div class="result-percent" id="result-percent"></div>
+    <div class="result-percent-label">книги прочитано</div>
+    <div class="spacer"></div>
+    <div class="result-actions" id="result-actions"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

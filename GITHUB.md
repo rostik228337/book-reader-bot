@@ -1,28 +1,20 @@
-# Как выложить проект на GitHub
+# Как выложить на GitHub и включить Pages
 
-## ШАГ 1. Установить Git
-Скачать: https://git-scm.com/download/win
-При установке — все параметры по умолчанию. После установки в PowerShell проверь:
+## ШАГ 1. Установить Git (если нет)
+https://git-scm.com/download/win — все параметры по умолчанию. Проверка:
 ```powershell
 git --version
 ```
 
-## ШАГ 2. Зарегистрироваться на GitHub
-Если ещё нет аккаунта: https://github.com/signup
+## ШАГ 2. Создать репозиторий на GitHub
+1. https://github.com → <kbd>+</kbd> → <kbd>New repository</kbd>
+2. Name: `book-reader-bot` (или любое)
+3. **Public** — обязательно, иначе GitHub Pages не включится на бесплатном тарифе
+4. НЕ ставь галочки «Add README», «.gitignore», «license» — у нас всё уже есть
+5. <kbd>Create repository</kbd> → скопируй URL
 
-## ШАГ 3. Создать репозиторий на GitHub
-1. Зайди на https://github.com → нажми <kbd>+</kbd> → <kbd>New repository</kbd>
-2. Repository name: `book-reader-bot` (или любое другое)
-3. **Private** — если хочешь чтобы никто кроме тебя не видел (рекомендую)
-4. **НЕ ставь** галочки «Add README», «Add .gitignore», «license» — у нас всё это уже есть
-5. Нажми <kbd>Create repository</kbd>
-6. На следующей странице скопируй URL из блока «…or push an existing repository from the command line». Он вида:
-   ```
-   https://github.com/ТВОЙ_НИК/book-reader-bot.git
-   ```
+## ШАГ 3. Пушнуть проект
 
-## ШАГ 4. Инициализировать git локально и запушить
-Открой PowerShell в папке проекта:
 ```powershell
 cd "C:\Users\User\Documents\Claude\Projects\ПРОЕКТ КНИГА"
 git init
@@ -30,28 +22,50 @@ git add .
 git status
 ```
 
-**⚠️ ВАЖНО — проверь вывод `git status`:**
-- Должны добавиться: `README.md`, `.gitignore`, `УСТАНОВКА.md`, `ТЗ.md`, `ПРОМТ_ДЛЯ_КОДА.md`, `GITHUB.md`, `setup.bat`, `run.bat`, `bot/*.py`, `bot/requirements.txt`, `bot/.env.example`, `data/chapters.json`
-- **НЕ должно быть** `bot/.env` — если он в списке, значит `.gitignore` не сработал, СТОП и пиши мне
+**Проверь `git status` — должно быть:**
+- `README.md`, `ТЗ.md`, `GITHUB.md`, `УСТАНОВКА.md`, `.gitignore`
+- `docs/index.html`, `docs/app.js`, `docs/style.css`, `docs/chapters.json`
+
+**НЕ должно быть** `backend/`, `webapp/`, `bot/`, `setup.bat`, `run.bat`, `*.env` — всё это в `.gitignore`.
 
 Если всё ок:
 ```powershell
-git commit -m "initial: book reader telegram bot"
+git commit -m "initial: static mini app on github pages"
 git branch -M main
 git remote add origin https://github.com/ТВОЙ_НИК/book-reader-bot.git
 git push -u origin main
 ```
 
-При первом пуше GitHub попросит логин. Используй **Personal Access Token** (не пароль):
+Первый пуш попросит логин. Пароль НЕ сработает — нужен **Personal Access Token**:
 1. https://github.com/settings/tokens → Generate new token (classic)
-2. Scope: `repo` (галочку)
-3. Скопируй токен → вставь вместо пароля
+2. Scope: `repo`
+3. Скопируй, вставь вместо пароля
 
-## ШАГ 5. Проверить на GitHub
-Зайди на страницу репозитория — убедись, что `bot/.env` **отсутствует** в списке файлов. Если вдруг видишь его там — токен бота скомпрометирован, нужно отзывать через @BotFather.
+## ШАГ 4. Включить GitHub Pages
 
-## Как потом обновлять код
-После любых изменений:
+1. Репо на github.com → **Settings** → **Pages**
+2. **Source:** Deploy from a branch
+3. **Branch:** `main` / **Folder:** `/docs`
+4. Save
+
+Через 30–60 сек появится URL:
+```
+https://<твой-ник>.github.io/book-reader-bot/
+```
+
+Открой — должно загрузиться (вне Telegram покажет либо UI книги, либо заглушку).
+
+## ШАГ 5. Вставить URL в BotFather
+
+1. Telegram → [@BotFather](https://t.me/BotFather)
+2. `/mybots` → твой бот
+3. **Bot Settings** → **Menu Button** → **Configure menu button**
+4. URL: тот что с шага 4
+5. Название: `📖 Открыть книгу`
+
+## Обновление
+
+Изменил что-то:
 ```powershell
 cd "C:\Users\User\Documents\Claude\Projects\ПРОЕКТ КНИГА"
 git add .
@@ -59,12 +73,4 @@ git commit -m "что изменил"
 git push
 ```
 
-## Клонирование на другой компьютер
-```powershell
-git clone https://github.com/ТВОЙ_НИК/book-reader-bot.git
-cd book-reader-bot
-copy bot\.env.example bot\.env
-notepad bot\.env      # вписать BOT_TOKEN и ADMIN_USER_ID
-setup.bat             # поставить зависимости
-run.bat               # запустить
-```
+Pages пересоберёт автоматически через ~30 сек.

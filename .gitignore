@@ -1,35 +1,33 @@
 # Секреты — НИКОГДА не коммитить
-bot/.env
-backend/.env
 *.env
-!.env.example
+\!.env.example
 
-# База данных (локальная)
+# Локальное хранилище (больше не нужно, но на всякий)
 data/progress.db
 data/progress.db-journal
 
-# Python
+# Старый Python-бэкенд (теперь всё на GitHub Pages / docs/)
+backend/
+webapp/
+setup.bat
+run.bat
+bot/
+ПРОМТ_ДЛЯ_КОДА.md
+
+# Python артефакты
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-bot/venv/
-backend/venv/
 venv/
 env/
 .venv/
 
-# IDE
+# IDE / OS
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Служебное
-bot/.gitkeep
-data/.gitkeep
